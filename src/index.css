@@ -205,3 +205,39 @@ button {
     flex-wrap: wrap;
   }
 }
+.mission {
+  margin-bottom: 32px;
+  text-align: center;
+}
+
+.mission-label {
+  margin: 0 0 8px;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  opacity: 0.45;
+}
+
+.mission h1 {
+  margin: 0;
+  font-size: clamp(16px, 2vw, 24px);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+.event-input {
+  width: min(320px, 100%);
+  margin-bottom: 16px;
+  padding: 10px 12px;
+  border: 1px solid #333333;
+  outline: none;
+  background: #000000;
+  color: #ffffff;
+  text-align: center;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.event-input:focus {
+  border-color: #ffffff;
+}

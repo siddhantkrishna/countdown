@@ -18,9 +18,11 @@ function App() {
   const [seconds, setSeconds] = useState(DEFAULT_TIME);
   const [isPaused, setIsPaused] = useState(false);
   const [showSetup, setShowSetup] = useState(false);
+
   const [inputHours, setInputHours] = useState("01");
   const [inputMinutes, setInputMinutes] = useState("00");
   const [inputSeconds, setInputSeconds] = useState("00");
+  const [eventName, setEventName] = useState("MISSION");
 
   useEffect(() => {
     if (isPaused || seconds === 0) return;
@@ -94,6 +96,11 @@ function App() {
         </div>
       </header>
 
+      <section className="mission">
+        <p className="mission-label">EVENT</p>
+        <h1>{eventName || "MISSION"}</h1>
+      </section>
+
       <section className="timer" aria-label="Countdown timer">
         <span>{time.hours}</span>
         <span>:</span>
@@ -119,7 +126,17 @@ function App() {
 
       {showSetup && (
         <section className="setup">
-          <p className="setup-label">SET DURATION</p>
+          <p className="setup-label">CONFIGURE</p>
+
+          <input
+            className="event-input"
+            type="text"
+            maxLength={32}
+            value={eventName}
+            onChange={(event) => setEventName(event.target.value)}
+            placeholder="EVENT NAME"
+            aria-label="Event name"
+          />
 
           <div className="inputs">
             <input
