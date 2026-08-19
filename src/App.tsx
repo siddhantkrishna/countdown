@@ -8,7 +8,10 @@ function App() {
     if (isPaused) return;
 
     const interval = setInterval(() => {
-      setSeconds((current) => current + 1);
+      setSeconds((current) => {
+        if (current <= 0) return 0;
+        return current - 1;
+      });
     }, 1000);
 
     return () => clearInterval(interval);
