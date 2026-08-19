@@ -26,6 +26,14 @@ function formatTime(seconds: number) {
 
 function App() {
   const [targetTime, setTargetTime] = useState<number | null>(() => {
+    const params = new URLSearchParams(window.location.search);
+    const target = params.get("target");
+
+    if (target) {
+      const parsed = Number(target);
+      return Number.isNaN(parsed) ? null : parsed;
+    }
+
     const saved = localStorage.getItem("countdown-state");
 
     if (!saved) return null;
@@ -39,45 +47,21 @@ function App() {
   });
 
   const [seconds, setSeconds] = useState(() => {
-    const saved = localStorage.getItem("countdown-state");
+    const params = new URLSearchParams(window.location.search);
+    const target = Number(params.get("target"));
 
-    if (!saved) return DEFAULT_TIME;
-
-    try {
-      const state = JSON.parse(saved);
-
-      if (state.targetTime) {
-        return getRemainingSeconds(state.targetTime);
-      }
-
-      return DEFAULT_TIME;
-    } catch {
-      return DEFAULT_TIME;
+    if (target && !Number.isNaN(target)) {
+      return getRemainingSeconds(target);
     }
+
+    return DEFAULT_TIME;
   });
 
-  const [isPaused, setIsPaused] = useState(() => {
-    const saved = localStorage.getItem("countdown-state");
-
-    if (!saved) return false;
-
-    try {
-      return JSON.parse(saved).isPaused ?? false;
-    } catch {
-      return false;
-    }
-  });
+  const [isPaused, setIsPaused] = useState(false);
 
   const [eventName, setEventName] = useState(() => {
-    const saved = localStorage.getItem("countdown-state");
-
-    if (!saved) return "MISSION";
-
-    try {
-      return JSON.parse(saved).eventName || "MISSION";
-    } catch {
-      return "MISSION";
-    }
+    const params = new URLSearchParams(window.location.search);
+    return params.get("event") || "MISSION";
   });
 
   const [showSetup, setShowSetup] = useState(false);
@@ -153,6 +137,33 @@ function App() {
     setSeconds(getRemainingSeconds(target));
     setIsPaused(false);
     setShowSetup(false);
+
+    const params = new URLSearchParams();
+
+    params.set("target", String(target));
+    params.set("event", eventName || "MISSION");
+
+    window.history.replaceState(
+      {},
+      "",
+      `${window.location.pathname}?${params.toString()}`
+    );
+  };
+
+  const handleShare = async () => {
+    const url = window.location.href;
+
+    if (navigator.share) {
+      await navigator.share({
+        title: eventName || "Countdown",
+        text: `Countdown to ${eventName || "MISSION"}`,
+        url,
+      });
+
+      return;
+    }
+
+    await navigator.clipboard.writeText(url);
   };
 
   return (
@@ -199,6 +210,8 @@ function App() {
         <button onClick={() => setShowSetup((current) => !current)}>
           SET
         </button>
+
+        <button onClick={handleShare}>SHARE</button>
       </div>
 
       {showSetup && (
