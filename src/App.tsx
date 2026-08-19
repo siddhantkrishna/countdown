@@ -28,6 +28,26 @@ function App() {
     return () => clearInterval(interval);
   }, [isPaused, seconds]);
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.code === "Space") {
+        event.preventDefault();
+        setIsPaused((current) => !current);
+      }
+
+      if (event.key.toLowerCase() === "r") {
+        setSeconds(INITIAL_TIME);
+        setIsPaused(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+
   const time = formatTime(seconds);
 
   const handleReset = () => {
@@ -54,6 +74,8 @@ function App() {
 
         <button onClick={handleReset}>RESET</button>
       </div>
+
+      <p className="shortcuts">SPACE TO PAUSE · R TO RESET</p>
     </main>
   );
 }

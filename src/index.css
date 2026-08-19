@@ -74,3 +74,9 @@ input {
   background: #ffffff;
   color: #000000;
 }
+.shortcuts {
+  margin: 24px 0 0;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  opacity: 0.45;
+}
