@@ -40,9 +40,7 @@ function App() {
           {isPaused ? "RESUME" : "PAUSE"}
         </button>
 
-        <button onClick={handleReset}>
-          RESET
-        </button>
+        <button onClick={handleReset}>RESET</button>
       </div>
     </main>
   );
