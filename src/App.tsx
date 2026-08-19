@@ -2,6 +2,18 @@ import { useEffect, useState } from "react";
 
 const INITIAL_TIME = 3600;
 
+function formatTime(seconds: number) {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const remainingSeconds = seconds % 60;
+
+  return {
+    hours: String(hours).padStart(2, "0"),
+    minutes: String(minutes).padStart(2, "0"),
+    seconds: String(remainingSeconds).padStart(2, "0"),
+  };
+}
+
 function App() {
   const [seconds, setSeconds] = useState(INITIAL_TIME);
   const [isPaused, setIsPaused] = useState(false);
@@ -16,9 +28,7 @@ function App() {
     return () => clearInterval(interval);
   }, [isPaused, seconds]);
 
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-  const remainingSeconds = seconds % 60;
+  const time = formatTime(seconds);
 
   const handleReset = () => {
     setSeconds(INITIAL_TIME);
@@ -30,11 +40,11 @@ function App() {
       <p className="label">COUNTDOWN</p>
 
       <section className="timer" aria-label="Countdown timer">
-        <span>{String(hours).padStart(2, "0")}</span>
+        <span>{time.hours}</span>
         <span>:</span>
-        <span>{String(minutes).padStart(2, "0")}</span>
+        <span>{time.minutes}</span>
         <span>:</span>
-        <span>{String(remainingSeconds).padStart(2, "0")}</span>
+        <span>{time.seconds}</span>
       </section>
 
       <div className="controls">
