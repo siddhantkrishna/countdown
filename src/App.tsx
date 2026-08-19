@@ -5,21 +5,23 @@ function App() {
   const [isPaused, setIsPaused] = useState(false);
 
   useEffect(() => {
-    if (isPaused) return;
+    if (isPaused || seconds === 0) return;
 
     const interval = setInterval(() => {
-      setSeconds((current) => {
-        if (current <= 0) return 0;
-        return current - 1;
-      });
+      setSeconds((current) => Math.max(current - 1, 0));
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [isPaused]);
+  }, [isPaused, seconds]);
 
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
   const remainingSeconds = seconds % 60;
+
+  const handleReset = () => {
+    setSeconds(3600);
+    setIsPaused(false);
+  };
 
   return (
     <main className="app">
@@ -36,6 +38,10 @@ function App() {
       <div className="controls">
         <button onClick={() => setIsPaused((current) => !current)}>
           {isPaused ? "RESUME" : "PAUSE"}
+        </button>
+
+        <button onClick={handleReset}>
+          RESET
         </button>
       </div>
     </main>
