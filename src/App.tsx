@@ -68,6 +68,7 @@ function App() {
               isPaused || isComplete ? "paused" : ""
             }`}
           />
+
           <span className="status">
             {isComplete ? "COMPLETE" : isPaused ? "PAUSED" : "ACTIVE"}
           </span>
@@ -93,7 +94,9 @@ function App() {
         <button onClick={handleReset}>RESET</button>
       </div>
 
-      <p className="shortcuts">SPACE TO PAUSE · R TO RESET</p>
+      <p className="shortcuts">
+        SPACE TO PAUSE · R TO RESET
+      </p>
     </main>
   );
 }

@@ -12,15 +12,17 @@
   box-sizing: border-box;
 }
 
-html {
-  background: #000000;
-}
-
-body {
+html,
+body,
+#root {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
   background: #000000;
+}
+
+body {
+  overflow: hidden;
 }
 
 button,
@@ -39,7 +41,6 @@ button {
   justify-content: center;
   align-items: center;
   padding: 40px;
-  overflow: hidden;
 }
 
 .header {
@@ -72,7 +73,7 @@ button {
 }
 
 .indicator.paused {
-  opacity: 0.35;
+  opacity: 0.3;
 }
 
 .status {
@@ -112,7 +113,10 @@ button {
   cursor: pointer;
   font-size: 11px;
   letter-spacing: 0.12em;
-  transition: background 150ms ease, color 150ms ease, opacity 150ms ease;
+  transition:
+    background 150ms ease,
+    color 150ms ease,
+    opacity 150ms ease;
 }
 
 .controls button:hover:not(:disabled) {
@@ -145,10 +149,5 @@ button {
 
   .timer {
     font-size: clamp(48px, 16vw, 100px);
-  }
-
-  .controls {
-    width: 100%;
-    justify-content: center;
   }
 }
