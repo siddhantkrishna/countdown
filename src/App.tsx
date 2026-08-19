@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 
+const INITIAL_TIME = 3600;
+
 function App() {
-  const [seconds, setSeconds] = useState(3600);
+  const [seconds, setSeconds] = useState(INITIAL_TIME);
   const [isPaused, setIsPaused] = useState(false);
 
   useEffect(() => {
@@ -19,7 +21,7 @@ function App() {
   const remainingSeconds = seconds % 60;
 
   const handleReset = () => {
-    setSeconds(3600);
+    setSeconds(INITIAL_TIME);
     setIsPaused(false);
   };
 
