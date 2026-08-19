@@ -23,3 +23,31 @@ button,
 input {
   font: inherit;
 }
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+}
+
+.label {
+  margin: 0 0 32px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+}
+
+.timer {
+  display: flex;
+  align-items: baseline;
+  font-size: clamp(64px, 14vw, 180px);
+  font-weight: 400;
+  letter-spacing: -0.06em;
+  line-height: 1;
+}
+
+.timer span:nth-child(even) {
+  margin: 0 0.08em;
+}

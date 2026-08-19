@@ -1,14 +1,14 @@
 function App() {
   return (
-    <main>
-      <h1>COUNTDOWN</h1>
+    <main className="app">
+      <p className="label">COUNTDOWN</p>
 
-      <section>
-        <div>00</div>
+      <section className="timer" aria-label="Countdown timer">
+        <span>00</span>
         <span>:</span>
-        <div>00</div>
+        <span>00</span>
         <span>:</span>
-        <div>00</div>
+        <span>00</span>
       </section>
     </main>
   );
