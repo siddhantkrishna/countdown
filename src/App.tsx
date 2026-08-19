@@ -25,39 +25,38 @@ function formatTime(seconds: number) {
   };
 }
 
-function loadState(): SavedState {
-  const saved = localStorage.getItem("countdown-state");
-
-  if (!saved) {
-    return {
-      targetTime: Date.now() + DEFAULT_TIME * 1000,
-      pausedSeconds: DEFAULT_TIME,
-      isPaused: false,
-      eventName: "MISSION",
-    };
-  }
-
-  try {
-    const state = JSON.parse(saved);
-
-    return {
-      targetTime: state.targetTime ?? Date.now() + DEFAULT_TIME * 1000,
-      pausedSeconds: state.pausedSeconds ?? DEFAULT_TIME,
-      isPaused: state.isPaused ?? false,
-      eventName: state.eventName || "MISSION",
-    };
-  } catch {
-    return {
-      targetTime: Date.now() + DEFAULT_TIME * 1000,
-      pausedSeconds: DEFAULT_TIME,
-      isPaused: false,
-      eventName: "MISSION",
-    };
-  }
-}
-
 function App() {
-  const [initialState] = useState(loadState);
+  const [initialState] = useState<SavedState>(() => {
+    const params = new URLSearchParams(window.location.search);
+    const target = Number(params.get("target"));
+    const event = params.get("event");
+
+    if (target && !Number.isNaN(target)) {
+      return {
+        targetTime: target,
+        pausedSeconds: getRemainingSeconds(target),
+        isPaused: false,
+        eventName: event || "MISSION",
+      };
+    }
+
+    const saved = localStorage.getItem("countdown-state");
+
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        // Fall through to default state.
+      }
+    }
+
+    return {
+      targetTime: Date.now() + DEFAULT_TIME * 1000,
+      pausedSeconds: DEFAULT_TIME,
+      isPaused: false,
+      eventName: "MISSION",
+    };
+  });
 
   const [targetTime, setTargetTime] = useState<number | null>(
     initialState.targetTime
@@ -102,31 +101,17 @@ function App() {
       eventName,
     };
 
-    localStorage.setItem("countdown-state", JSON.stringify(state));
+    localStorage.setItem(
+      "countdown-state",
+      JSON.stringify(state)
+    );
   }, [targetTime, seconds, isPaused, eventName]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.code === "Space") {
         event.preventDefault();
-
-        if (seconds === 0) return;
-
-        setIsPaused((current) => {
-          const nextPaused = !current;
-
-          if (nextPaused) {
-            setSeconds(
-              targetTime
-                ? getRemainingSeconds(targetTime)
-                : seconds
-            );
-          } else {
-            setTargetTime(Date.now() + seconds * 1000);
-          }
-
-          return nextPaused;
-        });
+        handlePauseToggle();
       }
 
       if (event.key.toLowerCase() === "r") {
@@ -142,11 +127,7 @@ function App() {
       }
 
       if (event.key === "Escape") {
-        if (document.fullscreenElement) {
-          document.exitFullscreen();
-        }
-
-        setIsFullscreen(false);
+        setShowSetup(false);
       }
     };
 
@@ -155,7 +136,7 @@ function App() {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [seconds, targetTime]);
+  }, [seconds, targetTime, isPaused]);
 
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -369,9 +350,10 @@ function App() {
             </section>
           )}
 
-          <p className="shortcuts">
-            SPACE · R · S · F
-          </p>
+          <footer className="footer">
+            <span>COUNTDOWN SYSTEM</span>
+            <span>LOCAL · SECURE · ACTIVE</span>
+          </footer>
         </>
       )}
     </main>

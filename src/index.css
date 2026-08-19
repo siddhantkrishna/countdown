@@ -282,3 +282,25 @@ button {
 .fullscreen .mission h1 {
   font-size: clamp(20px, 3vw, 40px);
 }
+.footer {
+  position: absolute;
+  bottom: 28px;
+  left: 40px;
+  right: 40px;
+  display: flex;
+  justify-content: space-between;
+  padding-top: 16px;
+  border-top: 1px solid #1c1c1c;
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  opacity: 0.35;
+}
+
+@media (max-width: 600px) {
+  .footer {
+    left: 24px;
+    right: 24px;
+    bottom: 20px;
+    font-size: 7px;
+  }
+}
