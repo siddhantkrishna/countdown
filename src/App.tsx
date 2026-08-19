@@ -2,6 +2,12 @@ import { useEffect, useState } from "react";
 
 const DEFAULT_TIME = 3600;
 
+type SavedState = {
+  seconds: number;
+  isPaused: boolean;
+  eventName: string;
+};
+
 function formatTime(seconds: number) {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
@@ -15,14 +21,59 @@ function formatTime(seconds: number) {
 }
 
 function App() {
-  const [seconds, setSeconds] = useState(DEFAULT_TIME);
-  const [isPaused, setIsPaused] = useState(false);
-  const [showSetup, setShowSetup] = useState(false);
+  const [seconds, setSeconds] = useState(() => {
+    const saved = localStorage.getItem("countdown-state");
 
+    if (!saved) return DEFAULT_TIME;
+
+    try {
+      const state: SavedState = JSON.parse(saved);
+      return state.seconds;
+    } catch {
+      return DEFAULT_TIME;
+    }
+  });
+
+  const [isPaused, setIsPaused] = useState(() => {
+    const saved = localStorage.getItem("countdown-state");
+
+    if (!saved) return false;
+
+    try {
+      const state: SavedState = JSON.parse(saved);
+      return state.isPaused;
+    } catch {
+      return false;
+    }
+  });
+
+  const [eventName, setEventName] = useState(() => {
+    const saved = localStorage.getItem("countdown-state");
+
+    if (!saved) return "MISSION";
+
+    try {
+      const state: SavedState = JSON.parse(saved);
+      return state.eventName || "MISSION";
+    } catch {
+      return "MISSION";
+    }
+  });
+
+  const [showSetup, setShowSetup] = useState(false);
   const [inputHours, setInputHours] = useState("01");
   const [inputMinutes, setInputMinutes] = useState("00");
   const [inputSeconds, setInputSeconds] = useState("00");
-  const [eventName, setEventName] = useState("MISSION");
+
+  useEffect(() => {
+    const state: SavedState = {
+      seconds,
+      isPaused,
+      eventName,
+    };
+
+    localStorage.setItem("countdown-state", JSON.stringify(state));
+  }, [seconds, isPaused, eventName]);
 
   useEffect(() => {
     if (isPaused || seconds === 0) return;
