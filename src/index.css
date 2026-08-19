@@ -23,6 +23,7 @@ button,
 input {
   font: inherit;
 }
+
 .app {
   min-height: 100vh;
   display: flex;
@@ -50,4 +51,23 @@ input {
 
 .timer span:nth-child(even) {
   margin: 0 0.08em;
+}
+
+.controls {
+  margin-top: 40px;
+}
+
+.controls button {
+  padding: 10px 18px;
+  border: 1px solid #ffffff;
+  background: transparent;
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+}
+
+.controls button:hover {
+  background: #ffffff;
+  color: #000000;
 }
