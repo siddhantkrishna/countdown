@@ -57,7 +57,12 @@ function App() {
 
   return (
     <main className="app">
-      <p className="label">COUNTDOWN</p>
+      <header className="header">
+        <span className="brand">T−</span>
+        <span className="status">
+          {isPaused ? "PAUSED" : "ACTIVE"}
+        </span>
+      </header>
 
       <section className="timer" aria-label="Countdown timer">
         <span>{time.hours}</span>

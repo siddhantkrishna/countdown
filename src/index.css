@@ -24,6 +24,10 @@ input {
   font: inherit;
 }
 
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
 .app {
   min-height: 100vh;
   display: flex;
@@ -33,11 +37,27 @@ input {
   padding: 40px;
 }
 
-.label {
-  margin: 0 0 32px;
-  font-size: 12px;
+.header {
+  position: absolute;
+  top: 32px;
+  left: 40px;
+  right: 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.brand {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.05em;
+}
+
+.status {
+  font-size: 9px;
   font-weight: 500;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.16em;
+  opacity: 0.5;
 }
 
 .timer {
@@ -47,6 +67,7 @@ input {
   font-weight: 400;
   letter-spacing: -0.06em;
   line-height: 1;
+  font-variant-numeric: tabular-nums;
 }
 
 .timer span:nth-child(even) {
@@ -74,9 +95,26 @@ input {
   background: #ffffff;
   color: #000000;
 }
+
 .shortcuts {
   margin: 24px 0 0;
   font-size: 9px;
   letter-spacing: 0.14em;
   opacity: 0.45;
+}
+
+@media (max-width: 600px) {
+  .app {
+    padding: 24px;
+  }
+
+  .header {
+    top: 24px;
+    left: 24px;
+    right: 24px;
+  }
+
+  .timer {
+    font-size: clamp(48px, 16vw, 100px);
+  }
 }
