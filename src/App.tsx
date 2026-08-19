@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-const INITIAL_TIME = 3600;
+const DEFAULT_TIME = 3600;
 
 function formatTime(seconds: number) {
   const hours = Math.floor(seconds / 3600);
@@ -15,8 +15,12 @@ function formatTime(seconds: number) {
 }
 
 function App() {
-  const [seconds, setSeconds] = useState(INITIAL_TIME);
+  const [seconds, setSeconds] = useState(DEFAULT_TIME);
   const [isPaused, setIsPaused] = useState(false);
+  const [showSetup, setShowSetup] = useState(false);
+  const [inputHours, setInputHours] = useState("01");
+  const [inputMinutes, setInputMinutes] = useState("00");
+  const [inputSeconds, setInputSeconds] = useState("00");
 
   useEffect(() => {
     if (isPaused || seconds === 0) return;
@@ -36,8 +40,12 @@ function App() {
       }
 
       if (event.key.toLowerCase() === "r") {
-        setSeconds(INITIAL_TIME);
+        setSeconds(DEFAULT_TIME);
         setIsPaused(false);
+      }
+
+      if (event.key.toLowerCase() === "s") {
+        setShowSetup((current) => !current);
       }
     };
 
@@ -49,13 +57,24 @@ function App() {
   }, []);
 
   const time = formatTime(seconds);
+  const isComplete = seconds === 0;
 
   const handleReset = () => {
-    setSeconds(INITIAL_TIME);
+    setSeconds(DEFAULT_TIME);
     setIsPaused(false);
   };
 
-  const isComplete = seconds === 0;
+  const handleSetTimer = () => {
+    const hours = Math.max(0, Number(inputHours) || 0);
+    const minutes = Math.min(59, Math.max(0, Number(inputMinutes) || 0));
+    const newSeconds = Math.min(59, Math.max(0, Number(inputSeconds) || 0));
+
+    const totalSeconds = hours * 3600 + minutes * 60 + newSeconds;
+
+    setSeconds(totalSeconds);
+    setIsPaused(false);
+    setShowSetup(false);
+  };
 
   return (
     <main className="app">
@@ -92,10 +111,56 @@ function App() {
         </button>
 
         <button onClick={handleReset}>RESET</button>
+
+        <button onClick={() => setShowSetup((current) => !current)}>
+          SET
+        </button>
       </div>
 
+      {showSetup && (
+        <section className="setup">
+          <p className="setup-label">SET DURATION</p>
+
+          <div className="inputs">
+            <input
+              type="number"
+              min="0"
+              value={inputHours}
+              onChange={(event) => setInputHours(event.target.value)}
+              aria-label="Hours"
+            />
+
+            <span>:</span>
+
+            <input
+              type="number"
+              min="0"
+              max="59"
+              value={inputMinutes}
+              onChange={(event) => setInputMinutes(event.target.value)}
+              aria-label="Minutes"
+            />
+
+            <span>:</span>
+
+            <input
+              type="number"
+              min="0"
+              max="59"
+              value={inputSeconds}
+              onChange={(event) => setInputSeconds(event.target.value)}
+              aria-label="Seconds"
+            />
+          </div>
+
+          <button className="apply" onClick={handleSetTimer}>
+            APPLY
+          </button>
+        </section>
+      )}
+
       <p className="shortcuts">
-        SPACE TO PAUSE · R TO RESET
+        SPACE TO PAUSE · R TO RESET · S TO SET
       </p>
     </main>
   );
