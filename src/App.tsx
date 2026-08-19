@@ -55,15 +55,21 @@ function App() {
     setIsPaused(false);
   };
 
+  const isComplete = seconds === 0;
+
   return (
     <main className="app">
       <header className="header">
         <span className="brand">T−</span>
 
         <div className="status-group">
-          <span className={`indicator ${isPaused ? "paused" : ""}`} />
+          <span
+            className={`indicator ${
+              isPaused || isComplete ? "paused" : ""
+            }`}
+          />
           <span className="status">
-            {isPaused ? "PAUSED" : "ACTIVE"}
+            {isComplete ? "COMPLETE" : isPaused ? "PAUSED" : "ACTIVE"}
           </span>
         </div>
       </header>
@@ -77,7 +83,10 @@ function App() {
       </section>
 
       <div className="controls">
-        <button onClick={() => setIsPaused((current) => !current)}>
+        <button
+          onClick={() => setIsPaused((current) => !current)}
+          disabled={isComplete}
+        >
           {isPaused ? "RESUME" : "PAUSE"}
         </button>
 
