@@ -1,21 +1,29 @@
 # T− Countdown
 
-A minimal countdown timer inspired by mission-control interfaces.
+A minimal countdown timer for anything worth counting down to.
 
 ## Features
 
-- Live countdown
+- Countdown to a specific date and time
+- Custom event names
 - Pause and resume
 - Reset
+- Shareable countdown URLs
+- Fullscreen mode
 - Keyboard controls
+- Local persistence
 - Responsive interface
 - Minimal black-and-white design
-- Inter typography
 
-## Controls
+## Keyboard Controls
 
-- `SPACE` — Pause / Resume
-- `R` — Reset
+| Key | Action |
+| --- | --- |
+| `SPACE` | Pause / Resume |
+| `R` | Reset |
+| `S` | Open setup |
+| `F` | Fullscreen |
+| `ESC` | Close setup |
 
 ## Tech Stack
 
