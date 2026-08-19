@@ -241,3 +241,33 @@ button {
 .event-input:focus {
   border-color: #ffffff;
 }
+.date-time {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.date-time input {
+  padding: 10px;
+  border: 1px solid #333333;
+  outline: none;
+  background: #000000;
+  color: #ffffff;
+  color-scheme: dark;
+  font-size: 11px;
+}
+
+.date-time input:focus {
+  border-color: #ffffff;
+}
+
+@media (max-width: 600px) {
+  .date-time {
+    width: 100%;
+  }
+
+  .date-time input {
+    width: 50%;
+  }
+}

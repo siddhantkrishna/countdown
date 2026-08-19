@@ -3,10 +3,14 @@ import { useEffect, useState } from "react";
 const DEFAULT_TIME = 3600;
 
 type SavedState = {
-  seconds: number;
+  targetTime: number | null;
   isPaused: boolean;
   eventName: string;
 };
+
+function getRemainingSeconds(targetTime: number) {
+  return Math.max(Math.ceil((targetTime - Date.now()) / 1000), 0);
+}
 
 function formatTime(seconds: number) {
   const hours = Math.floor(seconds / 3600);
@@ -21,14 +25,32 @@ function formatTime(seconds: number) {
 }
 
 function App() {
+  const [targetTime, setTargetTime] = useState<number | null>(() => {
+    const saved = localStorage.getItem("countdown-state");
+
+    if (!saved) return null;
+
+    try {
+      const state: SavedState = JSON.parse(saved);
+      return state.targetTime ?? null;
+    } catch {
+      return null;
+    }
+  });
+
   const [seconds, setSeconds] = useState(() => {
     const saved = localStorage.getItem("countdown-state");
 
     if (!saved) return DEFAULT_TIME;
 
     try {
-      const state: SavedState = JSON.parse(saved);
-      return state.seconds;
+      const state = JSON.parse(saved);
+
+      if (state.targetTime) {
+        return getRemainingSeconds(state.targetTime);
+      }
+
+      return DEFAULT_TIME;
     } catch {
       return DEFAULT_TIME;
     }
@@ -40,8 +62,7 @@ function App() {
     if (!saved) return false;
 
     try {
-      const state: SavedState = JSON.parse(saved);
-      return state.isPaused;
+      return JSON.parse(saved).isPaused ?? false;
     } catch {
       return false;
     }
@@ -53,37 +74,39 @@ function App() {
     if (!saved) return "MISSION";
 
     try {
-      const state: SavedState = JSON.parse(saved);
-      return state.eventName || "MISSION";
+      return JSON.parse(saved).eventName || "MISSION";
     } catch {
       return "MISSION";
     }
   });
 
   const [showSetup, setShowSetup] = useState(false);
-  const [inputHours, setInputHours] = useState("01");
-  const [inputMinutes, setInputMinutes] = useState("00");
-  const [inputSeconds, setInputSeconds] = useState("00");
+  const [dateInput, setDateInput] = useState("");
+  const [timeInput, setTimeInput] = useState("");
 
   useEffect(() => {
     const state: SavedState = {
-      seconds,
+      targetTime,
       isPaused,
       eventName,
     };
 
     localStorage.setItem("countdown-state", JSON.stringify(state));
-  }, [seconds, isPaused, eventName]);
+  }, [targetTime, isPaused, eventName]);
 
   useEffect(() => {
-    if (isPaused || seconds === 0) return;
+    if (isPaused || !targetTime) return;
 
-    const interval = setInterval(() => {
-      setSeconds((current) => Math.max(current - 1, 0));
-    }, 1000);
+    const update = () => {
+      setSeconds(getRemainingSeconds(targetTime));
+    };
+
+    update();
+
+    const interval = setInterval(update, 1000);
 
     return () => clearInterval(interval);
-  }, [isPaused, seconds]);
+  }, [isPaused, targetTime]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -93,6 +116,7 @@ function App() {
       }
 
       if (event.key.toLowerCase() === "r") {
+        setTargetTime(null);
         setSeconds(DEFAULT_TIME);
         setIsPaused(false);
       }
@@ -113,18 +137,20 @@ function App() {
   const isComplete = seconds === 0;
 
   const handleReset = () => {
+    setTargetTime(null);
     setSeconds(DEFAULT_TIME);
     setIsPaused(false);
   };
 
-  const handleSetTimer = () => {
-    const hours = Math.max(0, Number(inputHours) || 0);
-    const minutes = Math.min(59, Math.max(0, Number(inputMinutes) || 0));
-    const newSeconds = Math.min(59, Math.max(0, Number(inputSeconds) || 0));
+  const handleSetTarget = () => {
+    if (!dateInput || !timeInput) return;
 
-    const totalSeconds = hours * 3600 + minutes * 60 + newSeconds;
+    const target = new Date(`${dateInput}T${timeInput}`).getTime();
 
-    setSeconds(totalSeconds);
+    if (Number.isNaN(target) || target <= Date.now()) return;
+
+    setTargetTime(target);
+    setSeconds(getRemainingSeconds(target));
     setIsPaused(false);
     setShowSetup(false);
   };
@@ -189,40 +215,24 @@ function App() {
             aria-label="Event name"
           />
 
-          <div className="inputs">
+          <div className="date-time">
             <input
-              type="number"
-              min="0"
-              value={inputHours}
-              onChange={(event) => setInputHours(event.target.value)}
-              aria-label="Hours"
+              type="date"
+              value={dateInput}
+              onChange={(event) => setDateInput(event.target.value)}
+              aria-label="Target date"
             />
 
-            <span>:</span>
-
             <input
-              type="number"
-              min="0"
-              max="59"
-              value={inputMinutes}
-              onChange={(event) => setInputMinutes(event.target.value)}
-              aria-label="Minutes"
-            />
-
-            <span>:</span>
-
-            <input
-              type="number"
-              min="0"
-              max="59"
-              value={inputSeconds}
-              onChange={(event) => setInputSeconds(event.target.value)}
-              aria-label="Seconds"
+              type="time"
+              value={timeInput}
+              onChange={(event) => setTimeInput(event.target.value)}
+              aria-label="Target time"
             />
           </div>
 
-          <button className="apply" onClick={handleSetTimer}>
-            APPLY
+          <button className="apply" onClick={handleSetTarget}>
+            SET TARGET
           </button>
         </section>
       )}
