@@ -4,6 +4,7 @@ const DEFAULT_TIME = 3600;
 
 type SavedState = {
   targetTime: number | null;
+  pausedSeconds: number;
   isPaused: boolean;
   eventName: string;
 };
@@ -24,61 +25,60 @@ function formatTime(seconds: number) {
   };
 }
 
+function loadState(): SavedState {
+  const saved = localStorage.getItem("countdown-state");
+
+  if (!saved) {
+    return {
+      targetTime: Date.now() + DEFAULT_TIME * 1000,
+      pausedSeconds: DEFAULT_TIME,
+      isPaused: false,
+      eventName: "MISSION",
+    };
+  }
+
+  try {
+    const state = JSON.parse(saved);
+
+    return {
+      targetTime: state.targetTime ?? Date.now() + DEFAULT_TIME * 1000,
+      pausedSeconds: state.pausedSeconds ?? DEFAULT_TIME,
+      isPaused: state.isPaused ?? false,
+      eventName: state.eventName || "MISSION",
+    };
+  } catch {
+    return {
+      targetTime: Date.now() + DEFAULT_TIME * 1000,
+      pausedSeconds: DEFAULT_TIME,
+      isPaused: false,
+      eventName: "MISSION",
+    };
+  }
+}
+
 function App() {
-  const [targetTime, setTargetTime] = useState<number | null>(() => {
-    const params = new URLSearchParams(window.location.search);
-    const target = params.get("target");
+  const [initialState] = useState(loadState);
 
-    if (target) {
-      const parsed = Number(target);
-      return Number.isNaN(parsed) ? null : parsed;
-    }
+  const [targetTime, setTargetTime] = useState<number | null>(
+    initialState.targetTime
+  );
 
-    const saved = localStorage.getItem("countdown-state");
+  const [seconds, setSeconds] = useState(
+    initialState.isPaused
+      ? initialState.pausedSeconds
+      : initialState.targetTime
+        ? getRemainingSeconds(initialState.targetTime)
+        : DEFAULT_TIME
+  );
 
-    if (!saved) return null;
-
-    try {
-      const state: SavedState = JSON.parse(saved);
-      return state.targetTime ?? null;
-    } catch {
-      return null;
-    }
-  });
-
-  const [seconds, setSeconds] = useState(() => {
-    const params = new URLSearchParams(window.location.search);
-    const target = Number(params.get("target"));
-
-    if (target && !Number.isNaN(target)) {
-      return getRemainingSeconds(target);
-    }
-
-    return DEFAULT_TIME;
-  });
-
-  const [isPaused, setIsPaused] = useState(false);
-
-  const [eventName, setEventName] = useState(() => {
-    const params = new URLSearchParams(window.location.search);
-    return params.get("event") || "MISSION";
-  });
+  const [isPaused, setIsPaused] = useState(initialState.isPaused);
+  const [eventName, setEventName] = useState(initialState.eventName);
 
   const [showSetup, setShowSetup] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   const [dateInput, setDateInput] = useState("");
   const [timeInput, setTimeInput] = useState("");
-
-  useEffect(() => {
-    const state: SavedState = {
-      targetTime,
-      isPaused,
-      eventName,
-    };
-
-    localStorage.setItem("countdown-state", JSON.stringify(state));
-  }, [targetTime, isPaused, eventName]);
 
   useEffect(() => {
     if (isPaused || !targetTime) return;
@@ -95,16 +95,42 @@ function App() {
   }, [isPaused, targetTime]);
 
   useEffect(() => {
+    const state: SavedState = {
+      targetTime,
+      pausedSeconds: seconds,
+      isPaused,
+      eventName,
+    };
+
+    localStorage.setItem("countdown-state", JSON.stringify(state));
+  }, [targetTime, seconds, isPaused, eventName]);
+
+  useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.code === "Space") {
         event.preventDefault();
-        setIsPaused((current) => !current);
+
+        if (seconds === 0) return;
+
+        setIsPaused((current) => {
+          const nextPaused = !current;
+
+          if (nextPaused) {
+            setSeconds(
+              targetTime
+                ? getRemainingSeconds(targetTime)
+                : seconds
+            );
+          } else {
+            setTargetTime(Date.now() + seconds * 1000);
+          }
+
+          return nextPaused;
+        });
       }
 
       if (event.key.toLowerCase() === "r") {
-        setTargetTime(null);
-        setSeconds(DEFAULT_TIME);
-        setIsPaused(false);
+        handleReset();
       }
 
       if (event.key.toLowerCase() === "s") {
@@ -116,6 +142,10 @@ function App() {
       }
 
       if (event.key === "Escape") {
+        if (document.fullscreenElement) {
+          document.exitFullscreen();
+        }
+
         setIsFullscreen(false);
       }
     };
@@ -125,23 +155,55 @@ function App() {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
+  }, [seconds, targetTime]);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement));
+    };
+
+    document.addEventListener(
+      "fullscreenchange",
+      handleFullscreenChange
+    );
+
+    return () => {
+      document.removeEventListener(
+        "fullscreenchange",
+        handleFullscreenChange
+      );
+    };
   }, []);
 
   const toggleFullscreen = async () => {
     if (!document.fullscreenElement) {
       await document.documentElement.requestFullscreen();
-      setIsFullscreen(true);
     } else {
       await document.exitFullscreen();
-      setIsFullscreen(false);
     }
   };
 
-  const time = formatTime(seconds);
-  const isComplete = seconds === 0;
+  const handlePauseToggle = () => {
+    if (seconds === 0) return;
+
+    if (isPaused) {
+      setTargetTime(Date.now() + seconds * 1000);
+      setIsPaused(false);
+      return;
+    }
+
+    const remaining = targetTime
+      ? getRemainingSeconds(targetTime)
+      : seconds;
+
+    setSeconds(remaining);
+    setIsPaused(true);
+  };
 
   const handleReset = () => {
-    setTargetTime(null);
+    const newTarget = Date.now() + DEFAULT_TIME * 1000;
+
+    setTargetTime(newTarget);
     setSeconds(DEFAULT_TIME);
     setIsPaused(false);
   };
@@ -149,7 +211,9 @@ function App() {
   const handleSetTarget = () => {
     if (!dateInput || !timeInput) return;
 
-    const target = new Date(`${dateInput}T${timeInput}`).getTime();
+    const target = new Date(
+      `${dateInput}T${timeInput}`
+    ).getTime();
 
     if (Number.isNaN(target) || target <= Date.now()) return;
 
@@ -186,6 +250,9 @@ function App() {
     await navigator.clipboard.writeText(url);
   };
 
+  const time = formatTime(seconds);
+  const isComplete = seconds === 0;
+
   return (
     <main className={`app ${isFullscreen ? "fullscreen" : ""}`}>
       <header className="header">
@@ -199,7 +266,11 @@ function App() {
           />
 
           <span className="status">
-            {isComplete ? "COMPLETE" : isPaused ? "PAUSED" : "ACTIVE"}
+            {isComplete
+              ? "COMPLETE"
+              : isPaused
+                ? "PAUSED"
+                : "ACTIVE"}
           </span>
         </div>
       </header>
@@ -209,7 +280,10 @@ function App() {
         <h1>{eventName || "MISSION"}</h1>
       </section>
 
-      <section className="timer" aria-label="Countdown timer">
+      <section
+        className="timer"
+        aria-label="Countdown timer"
+      >
         <span>{time.hours}</span>
         <span>:</span>
         <span>{time.minutes}</span>
@@ -221,33 +295,47 @@ function App() {
         <>
           <div className="controls">
             <button
-              onClick={() => setIsPaused((current) => !current)}
+              onClick={handlePauseToggle}
               disabled={isComplete}
             >
               {isPaused ? "RESUME" : "PAUSE"}
             </button>
 
-            <button onClick={handleReset}>RESET</button>
+            <button onClick={handleReset}>
+              RESET
+            </button>
 
-            <button onClick={() => setShowSetup((current) => !current)}>
+            <button
+              onClick={() =>
+                setShowSetup((current) => !current)
+              }
+            >
               SET
             </button>
 
-            <button onClick={handleShare}>SHARE</button>
+            <button onClick={handleShare}>
+              SHARE
+            </button>
 
-            <button onClick={toggleFullscreen}>FULLSCREEN</button>
+            <button onClick={toggleFullscreen}>
+              FULLSCREEN
+            </button>
           </div>
 
           {showSetup && (
             <section className="setup">
-              <p className="setup-label">CONFIGURE</p>
+              <p className="setup-label">
+                CONFIGURE
+              </p>
 
               <input
                 className="event-input"
                 type="text"
                 maxLength={32}
                 value={eventName}
-                onChange={(event) => setEventName(event.target.value)}
+                onChange={(event) =>
+                  setEventName(event.target.value)
+                }
                 placeholder="EVENT NAME"
                 aria-label="Event name"
               />
@@ -256,19 +344,26 @@ function App() {
                 <input
                   type="date"
                   value={dateInput}
-                  onChange={(event) => setDateInput(event.target.value)}
+                  onChange={(event) =>
+                    setDateInput(event.target.value)
+                  }
                   aria-label="Target date"
                 />
 
                 <input
                   type="time"
                   value={timeInput}
-                  onChange={(event) => setTimeInput(event.target.value)}
+                  onChange={(event) =>
+                    setTimeInput(event.target.value)
+                  }
                   aria-label="Target time"
                 />
               </div>
 
-              <button className="apply" onClick={handleSetTarget}>
+              <button
+                className="apply"
+                onClick={handleSetTarget}
+              >
                 SET TARGET
               </button>
             </section>
