@@ -271,3 +271,14 @@ button {
     width: 50%;
   }
 }
+.fullscreen {
+  min-height: 100vh;
+}
+
+.fullscreen .timer {
+  font-size: clamp(100px, 22vw, 320px);
+}
+
+.fullscreen .mission h1 {
+  font-size: clamp(20px, 3vw, 40px);
+}

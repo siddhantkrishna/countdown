@@ -65,6 +65,8 @@ function App() {
   });
 
   const [showSetup, setShowSetup] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
   const [dateInput, setDateInput] = useState("");
   const [timeInput, setTimeInput] = useState("");
 
@@ -108,6 +110,14 @@ function App() {
       if (event.key.toLowerCase() === "s") {
         setShowSetup((current) => !current);
       }
+
+      if (event.key.toLowerCase() === "f") {
+        toggleFullscreen();
+      }
+
+      if (event.key === "Escape") {
+        setIsFullscreen(false);
+      }
     };
 
     window.addEventListener("keydown", handleKeyDown);
@@ -116,6 +126,16 @@ function App() {
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
+
+  const toggleFullscreen = async () => {
+    if (!document.fullscreenElement) {
+      await document.documentElement.requestFullscreen();
+      setIsFullscreen(true);
+    } else {
+      await document.exitFullscreen();
+      setIsFullscreen(false);
+    }
+  };
 
   const time = formatTime(seconds);
   const isComplete = seconds === 0;
@@ -167,7 +187,7 @@ function App() {
   };
 
   return (
-    <main className="app">
+    <main className={`app ${isFullscreen ? "fullscreen" : ""}`}>
       <header className="header">
         <span className="brand">T−</span>
 
@@ -197,62 +217,68 @@ function App() {
         <span>{time.seconds}</span>
       </section>
 
-      <div className="controls">
-        <button
-          onClick={() => setIsPaused((current) => !current)}
-          disabled={isComplete}
-        >
-          {isPaused ? "RESUME" : "PAUSE"}
-        </button>
+      {!isFullscreen && (
+        <>
+          <div className="controls">
+            <button
+              onClick={() => setIsPaused((current) => !current)}
+              disabled={isComplete}
+            >
+              {isPaused ? "RESUME" : "PAUSE"}
+            </button>
 
-        <button onClick={handleReset}>RESET</button>
+            <button onClick={handleReset}>RESET</button>
 
-        <button onClick={() => setShowSetup((current) => !current)}>
-          SET
-        </button>
+            <button onClick={() => setShowSetup((current) => !current)}>
+              SET
+            </button>
 
-        <button onClick={handleShare}>SHARE</button>
-      </div>
+            <button onClick={handleShare}>SHARE</button>
 
-      {showSetup && (
-        <section className="setup">
-          <p className="setup-label">CONFIGURE</p>
-
-          <input
-            className="event-input"
-            type="text"
-            maxLength={32}
-            value={eventName}
-            onChange={(event) => setEventName(event.target.value)}
-            placeholder="EVENT NAME"
-            aria-label="Event name"
-          />
-
-          <div className="date-time">
-            <input
-              type="date"
-              value={dateInput}
-              onChange={(event) => setDateInput(event.target.value)}
-              aria-label="Target date"
-            />
-
-            <input
-              type="time"
-              value={timeInput}
-              onChange={(event) => setTimeInput(event.target.value)}
-              aria-label="Target time"
-            />
+            <button onClick={toggleFullscreen}>FULLSCREEN</button>
           </div>
 
-          <button className="apply" onClick={handleSetTarget}>
-            SET TARGET
-          </button>
-        </section>
-      )}
+          {showSetup && (
+            <section className="setup">
+              <p className="setup-label">CONFIGURE</p>
 
-      <p className="shortcuts">
-        SPACE TO PAUSE · R TO RESET · S TO SET
-      </p>
+              <input
+                className="event-input"
+                type="text"
+                maxLength={32}
+                value={eventName}
+                onChange={(event) => setEventName(event.target.value)}
+                placeholder="EVENT NAME"
+                aria-label="Event name"
+              />
+
+              <div className="date-time">
+                <input
+                  type="date"
+                  value={dateInput}
+                  onChange={(event) => setDateInput(event.target.value)}
+                  aria-label="Target date"
+                />
+
+                <input
+                  type="time"
+                  value={timeInput}
+                  onChange={(event) => setTimeInput(event.target.value)}
+                  aria-label="Target time"
+                />
+              </div>
+
+              <button className="apply" onClick={handleSetTarget}>
+                SET TARGET
+              </button>
+            </section>
+          )}
+
+          <p className="shortcuts">
+            SPACE · R · S · F
+          </p>
+        </>
+      )}
     </main>
   );
 }
