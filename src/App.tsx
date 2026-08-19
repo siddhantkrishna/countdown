@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 function App() {
-  const [seconds, setSeconds] = useState(0);
+  const [seconds, setSeconds] = useState(3600);
 
   useEffect(() => {
     const interval = setInterval(() => {
